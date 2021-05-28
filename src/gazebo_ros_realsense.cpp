@@ -55,11 +55,16 @@ void GazeboRosRealsense::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
     this->pointcloud_pub_ =
         this->rosnode_->advertise<sensor_msgs::PointCloud2>(pointCloudTopic_, 2, false);
   }
+
+  // initialize most recent rgb image time
+  last_rgb_frame_time_ = this->world->SimTime();
+
 }
 
 void GazeboRosRealsense::OnNewFrame(const rendering::CameraPtr cam,
                                     const transport::PublisherPtr pub) {
   common::Time current_time = this->world->SimTime();
+  last_rgb_frame_time_      = current_time;
 
   // identify camera
   std::string camera_id = extractCameraName(cam->Name());
