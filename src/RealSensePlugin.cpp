@@ -52,6 +52,7 @@ void RealSensePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   _sdf = _sdf->GetFirstElement();
 
   cameraParamsMap_.insert(std::make_pair(COLOR_CAMERA_NAME, CameraParams()));
+  cameraParamsMap_.insert(std::make_pair(ALIGNED_DEPTH_CAMERA_NAME, CameraParams()));
   cameraParamsMap_.insert(std::make_pair(DEPTH_CAMERA_NAME, CameraParams()));
   cameraParamsMap_.insert(std::make_pair(IRED1_CAMERA_NAME, CameraParams()));
   cameraParamsMap_.insert(std::make_pair(IRED2_CAMERA_NAME, CameraParams()));
@@ -64,6 +65,11 @@ void RealSensePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
       _sdf->GetValue()->Get(colorUpdateRate_);
     else if (name == "infraredUpdateRate")
       _sdf->GetValue()->Get(infraredUpdateRate_);
+    else if (name == "alignedDepthTopicName")
+      cameraParamsMap_[ALIGNED_DEPTH_CAMERA_NAME].topic_name = _sdf->GetValue()->GetAsString();
+    else if (name == "alignedDepthCameraInfoTopicName")
+      cameraParamsMap_[ALIGNED_DEPTH_CAMERA_NAME].camera_info_topic_name =
+        _sdf->GetValue()->GetAsString();
     else if (name == "depthTopicName")
       cameraParamsMap_[DEPTH_CAMERA_NAME].topic_name =
           _sdf->GetValue()->GetAsString();

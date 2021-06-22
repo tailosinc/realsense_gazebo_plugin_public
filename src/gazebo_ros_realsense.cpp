@@ -48,16 +48,23 @@ void GazeboRosRealsense::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
       cameraParamsMap_[IRED2_CAMERA_NAME].topic_name, 2);
   this->depth_pub_ = this->itnode_->advertiseCamera(
       cameraParamsMap_[DEPTH_CAMERA_NAME].topic_name, 2);
+  this->aligned_depth_pub_ = this->itnode_->advertiseCamera(
+      cameraParamsMap_[ALIGNED_DEPTH_CAMERA_NAME].topic_name, 2);
   if (pointCloud_)
   {
     this->pointcloud_pub_ =
         this->rosnode_->advertise<sensor_msgs::PointCloud2>(pointCloudTopic_, 2, false);
   }
+
+  // initialize most recent rgb image time
+  last_rgb_frame_time_ = this->world->SimTime();
+
 }
 
 void GazeboRosRealsense::OnNewFrame(const rendering::CameraPtr cam,
                                     const transport::PublisherPtr pub) {
   common::Time current_time = this->world->SimTime();
+  last_rgb_frame_time_      = current_time;
 
   // identify camera
   std::string camera_id = extractCameraName(cam->Name());
@@ -217,6 +224,13 @@ void GazeboRosRealsense::OnNewDepthFrame() {
   auto depth_info_msg =
       cameraInfo(this->depth_msg_, this->depthCam->HFOV().Radian());
   this->depth_pub_.publish(this->depth_msg_, depth_info_msg);
+
+  // modify depth image message time to align with latest rgb image time
+  auto aligned_depth_info_msg                = depth_info_msg;
+  this->aligned_depth_msg_                   = this->depth_msg_;
+  this->aligned_depth_msg_.header.stamp.sec  = last_rgb_frame_time_.sec;
+  this->aligned_depth_msg_.header.stamp.nsec = last_rgb_frame_time_.nsec;
+  this->aligned_depth_pub_.publish(this->aligned_depth_msg_, aligned_depth_info_msg);
 
   if (pointCloud_ && this->pointcloud_pub_.getNumSubscribers() > 0)
   {

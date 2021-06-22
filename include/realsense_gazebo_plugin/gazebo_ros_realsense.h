@@ -59,11 +59,12 @@ private:
   ros::Publisher pointcloud_pub_;
 
 protected:
-  image_transport::CameraPublisher color_pub_, ir1_pub_, ir2_pub_, depth_pub_;
+  common::Time last_rgb_frame_time_;
+  image_transport::CameraPublisher color_pub_, ir1_pub_, ir2_pub_, depth_pub_, aligned_depth_pub_;
 
   /// \brief ROS image messages
 protected:
-  sensor_msgs::Image image_msg_, depth_msg_;
+  sensor_msgs::Image image_msg_, depth_msg_, aligned_depth_msg_;
   sensor_msgs::PointCloud2 pointcloud_msg_;
 };
 }

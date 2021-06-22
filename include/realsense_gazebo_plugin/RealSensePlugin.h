@@ -29,6 +29,7 @@
 #include <string>
 
 namespace gazebo {
+#define ALIGNED_DEPTH_CAMERA_NAME "aligned_depth_to_color"
 #define DEPTH_CAMERA_NAME "depth"
 #define COLOR_CAMERA_NAME "color"
 #define IRED1_CAMERA_NAME "ired1"
