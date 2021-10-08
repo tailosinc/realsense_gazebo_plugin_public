@@ -89,6 +89,10 @@ void GazeboRosRealsense::OnNewFrame(
     this->cameraParamsMap_[camera_id].optical_frame;
   this->image_msg_.header.stamp.sec = current_time.sec;
   this->image_msg_.header.stamp.nanosec = current_time.nsec;
+  if (enableSync_ && camera_id == COLOR_CAMERA_NAME)
+  {
+    last_color_msg_stamp_ = this->image_msg_.header.stamp;
+  }
 
   // set image encoding
   const std::map<std::string, std::string> supported_image_encodings = {
@@ -223,9 +227,15 @@ void GazeboRosRealsense::OnNewDepthFrame()
   // copy data into image
   this->depth_msg_.header.frame_id =
     this->cameraParamsMap_[DEPTH_CAMERA_NAME].optical_frame;
-  this->depth_msg_.header.stamp.sec = current_time.sec;
-  this->depth_msg_.header.stamp.nanosec = current_time.nsec;
-
+  if (enableSync_)
+  {
+    this->depth_msg_.header.stamp = last_color_msg_stamp_;
+  }
+  else
+  {
+    this->depth_msg_.header.stamp.sec     = current_time.sec;
+    this->depth_msg_.header.stamp.nanosec = current_time.nsec;
+  }
   // set image encoding
   std::string pixel_format = sensor_msgs::image_encodings::TYPE_16UC1;
 
@@ -299,6 +309,7 @@ sensor_msgs::msg::CameraInfo cameraInfo(
   info_msg.p[6] = info_msg.k[5];
   info_msg.p[10] = info_msg.k[8];
 
+  info_msg.d = std::vector<double>(5, 0.0);
   //    info_msg.roi.do_rectify = true;
 
   return info_msg;
