@@ -75,6 +75,7 @@ protected:
 protected:
   sensor_msgs::msg::Image image_msg_, depth_msg_;
   sensor_msgs::msg::PointCloud2 pointcloud_msg_;
+  builtin_interfaces::msg::Time last_color_msg_stamp_;
 };
 }
 #endif /* _GAZEBO_ROS_REALSENSE_PLUGIN_ */

@@ -132,6 +132,9 @@ protected:
   double infraredUpdateRate_;
   double depthUpdateRate_;
 
+  /// \brief Synchronize the color and depth images
+  bool enableSync_;
+
   float rangeMinDepth_;
   float rangeMaxDepth_;
 };
