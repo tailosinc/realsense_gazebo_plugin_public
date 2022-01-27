@@ -4,6 +4,7 @@
 #include "realsense_gazebo_plugin/RealSensePlugin.h"
 
 #include <rclcpp/rclcpp.hpp>
+#include <gazebo_ros/node.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -60,7 +61,7 @@ protected:
   ///  A node will be instantiated if it does not exist.
 
 protected:
-  rclcpp::Node::SharedPtr node_;
+  gazebo_ros::Node::SharedPtr node_;
 
 private:
   std::unique_ptr<image_transport::ImageTransport> itnode_;

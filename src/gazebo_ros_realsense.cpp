@@ -27,8 +27,7 @@ GazeboRosRealsense::~GazeboRosRealsense()
 
 void GazeboRosRealsense::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
-
-  this->node_ = rclcpp::Node::make_shared("GazeboRealsenseNode");
+  this->node_ = gazebo_ros::Node::CreateWithArgs("GazeboRealsenseNode");
 
   // Make sure the ROS node for Gazebo has already been initialized
   if (!rclcpp::ok()) {
