@@ -18,6 +18,15 @@ GZ_REGISTER_MODEL_PLUGIN(GazeboRosRealsense)
 
 GazeboRosRealsense::GazeboRosRealsense()
 {
+  depth_to_color_extrinsics_msg_.translation[0] = 0;
+  depth_to_color_extrinsics_msg_.translation[1] = 0;
+  depth_to_color_extrinsics_msg_.translation[2] = 0;
+  for(int i = 0; i < 9; ++i){
+    depth_to_color_extrinsics_msg_.rotation[i] = 0;
+  }
+  depth_to_color_extrinsics_msg_.rotation[0] = 1;
+  depth_to_color_extrinsics_msg_.rotation[4] = 1;
+  depth_to_color_extrinsics_msg_.rotation[8] = 1;
 }
 
 GazeboRosRealsense::~GazeboRosRealsense()
@@ -49,6 +58,9 @@ void GazeboRosRealsense::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     new camera_info_manager::CameraInfoManager(this->node_.get(), this->GetHandle()));
 
   this->itnode_.reset(new image_transport::ImageTransport(this->node_));
+
+  this->depth_to_color_extrinsics_pub_ = this->node_->create_publisher<realsense2_camera_msgs::msg::Extrinsics>(
+    depthToColorExtrinsicsTopic_, rclcpp::SystemDefaultsQoS());
 
   this->color_pub_ = this->itnode_->advertiseCamera(
     cameraParamsMap_[COLOR_CAMERA_NAME].topic_name, 2);
@@ -248,6 +260,8 @@ void GazeboRosRealsense::OnNewDepthFrame()
   auto depth_info_msg =
     cameraInfo(this->depth_msg_, this->depthCam->HFOV().Radian());
   this->depth_pub_.publish(this->depth_msg_, depth_info_msg);
+
+  this->depth_to_color_extrinsics_pub_->publish(depth_to_color_extrinsics_msg_);
 
   if (pointCloud_ && this->pointcloud_pub_->get_subscription_count() > 0) {
     this->pointcloud_msg_.header = this->depth_msg_.header;

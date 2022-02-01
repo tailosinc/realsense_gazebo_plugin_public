@@ -3,8 +3,9 @@
 
 #include "realsense_gazebo_plugin/RealSensePlugin.h"
 
-#include <rclcpp/rclcpp.hpp>
 #include <gazebo_ros/node.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <realsense2_camera_msgs/msg/extrinsics.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -67,6 +68,7 @@ private:
   std::unique_ptr<image_transport::ImageTransport> itnode_;
 
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud_pub_;
+  rclcpp::Publisher<realsense2_camera_msgs::msg::Extrinsics>::SharedPtr depth_to_color_extrinsics_pub_;
 
 protected:
   image_transport::CameraPublisher color_pub_, ir1_pub_, ir2_pub_, depth_pub_;
@@ -74,6 +76,7 @@ protected:
   /// \brief ROS image messages
 
 protected:
+  realsense2_camera_msgs::msg::Extrinsics depth_to_color_extrinsics_msg_;
   sensor_msgs::msg::Image image_msg_, depth_msg_;
   sensor_msgs::msg::PointCloud2 pointcloud_msg_;
   builtin_interfaces::msg::Time last_color_msg_stamp_;
