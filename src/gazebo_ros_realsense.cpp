@@ -274,8 +274,6 @@ void GazeboRosRealsense::OnNewDepthFrame()
     cameraInfo(this->depth_msg_, this->depthCam->HFOV().Radian());
   this->depth_pub_.publish(this->depth_msg_, depth_info_msg);
 
-  this->depth_to_color_extrinsics_pub_->publish(depth_to_color_extrinsics_msg_);
-
   if (UpdateDepthToColorExtrinsics())
   {
     this->depth_to_color_extrinsics_pub_->publish(depth_to_color_extrinsics_msg_);
