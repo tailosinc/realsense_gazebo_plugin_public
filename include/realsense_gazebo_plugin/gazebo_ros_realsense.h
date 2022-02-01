@@ -65,6 +65,11 @@ protected:
   gazebo_ros::Node::SharedPtr node_;
 
 private:
+  /// \brief Find the rotation and translation between the depth
+  /// and color cameras and update these values in the camera extrinsics message.
+  /// returns true if the update succeeds, otherwise returns false.
+  bool UpdateDepthToColorExtrinsics();
+
   std::unique_ptr<image_transport::ImageTransport> itnode_;
 
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud_pub_;

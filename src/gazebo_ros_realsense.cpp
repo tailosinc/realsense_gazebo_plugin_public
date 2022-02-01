@@ -18,15 +18,6 @@ GZ_REGISTER_MODEL_PLUGIN(GazeboRosRealsense)
 
 GazeboRosRealsense::GazeboRosRealsense()
 {
-  depth_to_color_extrinsics_msg_.translation[0] = 0;
-  depth_to_color_extrinsics_msg_.translation[1] = 0;
-  depth_to_color_extrinsics_msg_.translation[2] = 0;
-  for(int i = 0; i < 9; ++i){
-    depth_to_color_extrinsics_msg_.rotation[i] = 0;
-  }
-  depth_to_color_extrinsics_msg_.rotation[0] = 1;
-  depth_to_color_extrinsics_msg_.rotation[4] = 1;
-  depth_to_color_extrinsics_msg_.rotation[8] = 1;
 }
 
 GazeboRosRealsense::~GazeboRosRealsense()
@@ -228,6 +219,28 @@ bool GazeboRosRealsense::FillPointCloudHelper(
   return true;
 }
 
+bool GazeboRosRealsense::UpdateDepthToColorExtrinsics()
+{
+  if (!this->depthCam || !this->colorCam)
+  {
+    return false;
+  }
+  auto depth_pose                               = this->depthCam->WorldPose();
+  auto color_pose                               = this->colorCam->WorldPose();
+  auto transform_pose                           = depth_pose.CoordPoseSolve(color_pose);
+  depth_to_color_extrinsics_msg_.translation[0] = transform_pose.X();
+  depth_to_color_extrinsics_msg_.translation[1] = transform_pose.Y();
+  depth_to_color_extrinsics_msg_.translation[2] = transform_pose.Z();
+  auto quaternion                               = transform_pose.Rot();
+  ignition::math::Matrix3 rotation_mat(quaternion);
+  for (int i = 0; i < 9; ++i)
+  {
+    int row = i / 3, col = i % 3;
+    depth_to_color_extrinsics_msg_.rotation[i] = rotation_mat(row, col);
+  }
+  return true;
+}
+
 void GazeboRosRealsense::OnNewDepthFrame()
 {
   // get current time
@@ -262,6 +275,11 @@ void GazeboRosRealsense::OnNewDepthFrame()
   this->depth_pub_.publish(this->depth_msg_, depth_info_msg);
 
   this->depth_to_color_extrinsics_pub_->publish(depth_to_color_extrinsics_msg_);
+
+  if (UpdateDepthToColorExtrinsics())
+  {
+    this->depth_to_color_extrinsics_pub_->publish(depth_to_color_extrinsics_msg_);
+  }
 
   if (pointCloud_ && this->pointcloud_pub_->get_subscription_count() > 0) {
     this->pointcloud_msg_.header = this->depth_msg_.header;
