@@ -19,6 +19,7 @@ find_package(rclcpp REQUIRED)
 find_package(gazebo_ros REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(camera_info_manager REQUIRED)
+find_package(realsense2_camera_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
 find_package(gazebo REQUIRED)
@@ -30,6 +31,7 @@ set( dependencies
     gazebo_ros
     image_transport
     camera_info_manager
+    realsense2_camera_msgs
     sensor_msgs
 )
 

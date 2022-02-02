@@ -50,6 +50,11 @@ void GazeboRosRealsense::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   this->itnode_.reset(new image_transport::ImageTransport(this->node_));
 
+  if (!depthToColorExtrinsicsTopic_.empty()) {
+    this->depth_to_color_extrinsics_pub_ = this->node_->create_publisher<realsense2_camera_msgs::msg::Extrinsics>(
+      depthToColorExtrinsicsTopic_, rclcpp::SystemDefaultsQoS());
+  }
+
   this->color_pub_ = this->itnode_->advertiseCamera(
     cameraParamsMap_[COLOR_CAMERA_NAME].topic_name, 2);
   this->ir1_pub_ = this->itnode_->advertiseCamera(
@@ -216,6 +221,28 @@ bool GazeboRosRealsense::FillPointCloudHelper(
   return true;
 }
 
+bool GazeboRosRealsense::UpdateDepthToColorExtrinsics()
+{
+  if (!this->depthCam || !this->colorCam)
+  {
+    return false;
+  }
+  auto depth_pose                               = this->depthCam->WorldPose();
+  auto color_pose                               = this->colorCam->WorldPose();
+  auto transform_pose                           = depth_pose.CoordPoseSolve(color_pose);
+  depth_to_color_extrinsics_msg_.translation[0] = transform_pose.X();
+  depth_to_color_extrinsics_msg_.translation[1] = transform_pose.Y();
+  depth_to_color_extrinsics_msg_.translation[2] = transform_pose.Z();
+  auto quaternion                               = transform_pose.Rot();
+  ignition::math::Matrix3 rotation_mat(quaternion);
+  for (int i = 0; i < 9; ++i)
+  {
+    int row = i / 3, col = i % 3;
+    depth_to_color_extrinsics_msg_.rotation[i] = rotation_mat(row, col);
+  }
+  return true;
+}
+
 void GazeboRosRealsense::OnNewDepthFrame()
 {
   // get current time
@@ -248,6 +275,10 @@ void GazeboRosRealsense::OnNewDepthFrame()
   auto depth_info_msg =
     cameraInfo(this->depth_msg_, this->depthCam->HFOV().Radian());
   this->depth_pub_.publish(this->depth_msg_, depth_info_msg);
+
+  if (this->depth_to_color_extrinsics_pub_ && UpdateDepthToColorExtrinsics()) {
+    this->depth_to_color_extrinsics_pub_->publish(depth_to_color_extrinsics_msg_);
+  }
 
   if (pointCloud_ && this->pointcloud_pub_->get_subscription_count() > 0) {
     this->pointcloud_msg_.header = this->depth_msg_.header;
