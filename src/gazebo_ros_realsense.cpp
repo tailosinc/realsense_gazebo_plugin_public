@@ -50,8 +50,10 @@ void GazeboRosRealsense::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   this->itnode_.reset(new image_transport::ImageTransport(this->node_));
 
-  this->depth_to_color_extrinsics_pub_ = this->node_->create_publisher<realsense2_camera_msgs::msg::Extrinsics>(
-    depthToColorExtrinsicsTopic_, rclcpp::SystemDefaultsQoS());
+  if (!depthToColorExtrinsicsTopic_.empty()) {
+    this->depth_to_color_extrinsics_pub_ = this->node_->create_publisher<realsense2_camera_msgs::msg::Extrinsics>(
+      depthToColorExtrinsicsTopic_, rclcpp::SystemDefaultsQoS());
+  }
 
   this->color_pub_ = this->itnode_->advertiseCamera(
     cameraParamsMap_[COLOR_CAMERA_NAME].topic_name, 2);
@@ -274,8 +276,7 @@ void GazeboRosRealsense::OnNewDepthFrame()
     cameraInfo(this->depth_msg_, this->depthCam->HFOV().Radian());
   this->depth_pub_.publish(this->depth_msg_, depth_info_msg);
 
-  if (UpdateDepthToColorExtrinsics())
-  {
+  if (this->depth_to_color_extrinsics_pub_ && UpdateDepthToColorExtrinsics()) {
     this->depth_to_color_extrinsics_pub_->publish(depth_to_color_extrinsics_msg_);
   }
 
