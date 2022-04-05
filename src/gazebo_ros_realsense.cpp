@@ -27,20 +27,19 @@ GazeboRosRealsense::~GazeboRosRealsense()
 
 void GazeboRosRealsense::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
-  _sdf                     = _sdf->GetFirstElement();
+  auto sdf_ptr = _sdf->GetFirstElement();
   std::string robot_prefix = "";
   do
   {
-    std::string name = _sdf->GetName();
+    std::string name = sdf_ptr->GetName();
     if (name == "robotNamespace")
     {
-      robot_prefix = _sdf->GetValue()->GetAsString() + "_";
+      robot_prefix = sdf_ptr->GetValue()->GetAsString() + "_";
       break;
     }
 
-    _sdf = _sdf->GetNextElement();
-  } while (_sdf);
-  _sdf                     = _sdf->GetFirstElement();
+    sdf_ptr = sdf_ptr->GetNextElement();
+  } while (sdf_ptr);
 
   this->node_ = gazebo_ros::Node::CreateWithArgs(robot_prefix + "GazeboRealsenseNode");
 

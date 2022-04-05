@@ -120,10 +120,6 @@ void RealSensePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
       depthToColorExtrinsicsTopic_ = _sdf->GetValue()->GetAsString();
     } else if (name == "prefix") {
       this->prefix = _sdf->GetValue()->GetAsString();
-    } else if (name == "robotNamespace") {
-      break;
-    } else {
-      throw std::runtime_error("Ivalid parameter for ReakSensePlugin");
     }
 
     _sdf = _sdf->GetNextElement();
