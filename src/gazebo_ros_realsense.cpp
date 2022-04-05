@@ -27,6 +27,22 @@ GazeboRosRealsense::~GazeboRosRealsense()
 
 void GazeboRosRealsense::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
+  _sdf                     = _sdf->GetFirstElement();
+  std::string robot_prefix = "";
+  do
+  {
+    std::string name = _sdf->GetName();
+    if (name == "robotNamespace")
+    {
+      robot_prefix = _sdf->GetValue()->GetAsString() + "_";
+      break;
+    }
+
+    _sdf = _sdf->GetNextElement();
+  } while (_sdf);
+
+  this->node_ = gazebo_ros::Node::CreateWithArgs(robot_prefix + "GazeboRealsenseNode");
+
   // Make sure the ROS node for Gazebo has already been initialized
   if (!rclcpp::ok()) {
     RCLCPP_ERROR(
@@ -39,22 +55,6 @@ void GazeboRosRealsense::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     return;
   }
   RCLCPP_INFO(node_->get_logger(), "Realsense Gazebo ROS plugin loading.");
-
-  _sdf                     = _sdf->GetFirstElement();
-  std::string robot_prefix = "";
-  do
-  {
-    std::string name = _sdf->GetName();
-    if (name == "prefix")
-    {
-      robot_prefix = _sdf->GetValue()->GetAsString() + "_";
-      break;
-    }
-
-    _sdf = _sdf->GetNextElement();
-  } while (_sdf);
-
-  this->node_ = gazebo_ros::Node::CreateWithArgs(robot_prefix + "GazeboRealsenseNode");
 
   RealSensePlugin::Load(_model, _sdf);
 
