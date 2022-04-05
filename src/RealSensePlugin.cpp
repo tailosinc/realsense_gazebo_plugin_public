@@ -51,12 +51,12 @@ void RealSensePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     "RealSensePlugin: The realsense_camera plugin is attach to model " <<
     _model->GetName() << std::endl;
 
-  _sdf = _sdf->GetFirstElement();
-
   cameraParamsMap_.insert(std::make_pair(COLOR_CAMERA_NAME, CameraParams()));
   cameraParamsMap_.insert(std::make_pair(DEPTH_CAMERA_NAME, CameraParams()));
   cameraParamsMap_.insert(std::make_pair(IRED1_CAMERA_NAME, CameraParams()));
   cameraParamsMap_.insert(std::make_pair(IRED2_CAMERA_NAME, CameraParams()));
+
+  _sdf = _sdf->GetFirstElement();
 
   do {
     std::string name = _sdf->GetName();
