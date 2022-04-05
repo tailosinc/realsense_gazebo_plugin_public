@@ -40,6 +40,7 @@ void GazeboRosRealsense::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
     _sdf = _sdf->GetNextElement();
   } while (_sdf);
+  _sdf                     = _sdf->GetFirstElement();
 
   this->node_ = gazebo_ros::Node::CreateWithArgs(robot_prefix + "GazeboRealsenseNode");
 
