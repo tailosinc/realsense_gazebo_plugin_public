@@ -198,25 +198,6 @@ void RealSensePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->colorPub = this->transportNode->Advertise<msgs::ImageStamped>(
     rsTopicRoot + COLOR_CAMERA_TOPIC, 1, colorUpdateRate_);
 
-  // Listen to depth camera new frame event
-  this->newDepthFrameConn = this->depthCam->ConnectNewDepthFrame(
-    std::bind(&RealSensePlugin::OnNewDepthFrame, this));
-
-  this->newIred1FrameConn = this->ired1Cam->ConnectNewImageFrame(
-    std::bind(
-      &RealSensePlugin::OnNewFrame, this, this->ired1Cam, this->ired1Pub));
-
-  this->newIred2FrameConn = this->ired2Cam->ConnectNewImageFrame(
-    std::bind(
-      &RealSensePlugin::OnNewFrame, this, this->ired2Cam, this->ired2Pub));
-
-  this->newColorFrameConn = this->colorCam->ConnectNewImageFrame(
-    std::bind(
-      &RealSensePlugin::OnNewFrame, this, this->colorCam, this->colorPub));
-
-  // Listen to the update event
-  this->updateConnection = event::Events::ConnectWorldUpdateBegin(
-    boost::bind(&RealSensePlugin::OnUpdate, this));
 }
 
 /////////////////////////////////////////////////
