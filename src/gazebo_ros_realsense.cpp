@@ -27,7 +27,21 @@ GazeboRosRealsense::~GazeboRosRealsense()
 
 void GazeboRosRealsense::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
-  this->node_ = gazebo_ros::Node::CreateWithArgs("GazeboRealsenseNode");
+  auto sdf_ptr = _sdf->GetFirstElement();
+  std::string robot_prefix = "";
+  do
+  {
+    std::string name = sdf_ptr->GetName();
+    if (name == "robotNamespace")
+    {
+      robot_prefix = sdf_ptr->GetValue()->GetAsString() + "_";
+      break;
+    }
+
+    sdf_ptr = sdf_ptr->GetNextElement();
+  } while (sdf_ptr);
+
+  this->node_ = gazebo_ros::Node::CreateWithArgs(robot_prefix + "GazeboRealsenseNode");
 
   // Make sure the ROS node for Gazebo has already been initialized
   if (!rclcpp::ok()) {
@@ -68,6 +82,26 @@ void GazeboRosRealsense::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     this->pointcloud_pub_ = this->node_->create_publisher<sensor_msgs::msg::PointCloud2>(
       pointCloudTopic_, rclcpp::SystemDefaultsQoS());
   }
+
+  // Listen to depth camera new frame event
+  this->newDepthFrameConn = this->depthCam->ConnectNewDepthFrame(
+    std::bind(&RealSensePlugin::OnNewDepthFrame, this));
+
+  this->newIred1FrameConn = this->ired1Cam->ConnectNewImageFrame(
+    std::bind(
+      &RealSensePlugin::OnNewFrame, this, this->ired1Cam, this->ired1Pub));
+
+  this->newIred2FrameConn = this->ired2Cam->ConnectNewImageFrame(
+    std::bind(
+      &RealSensePlugin::OnNewFrame, this, this->ired2Cam, this->ired2Pub));
+
+  this->newColorFrameConn = this->colorCam->ConnectNewImageFrame(
+    std::bind(
+      &RealSensePlugin::OnNewFrame, this, this->colorCam, this->colorPub));
+
+  // Listen to the update event
+  this->updateConnection = event::Events::ConnectWorldUpdateBegin(
+    boost::bind(&RealSensePlugin::OnUpdate, this));
 
   RCLCPP_INFO(node_->get_logger(), "Loaded Realsense Gazebo ROS plugin.");
 }

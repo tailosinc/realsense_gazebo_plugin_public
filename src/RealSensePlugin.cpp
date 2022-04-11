@@ -51,12 +51,12 @@ void RealSensePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     "RealSensePlugin: The realsense_camera plugin is attach to model " <<
     _model->GetName() << std::endl;
 
-  _sdf = _sdf->GetFirstElement();
-
   cameraParamsMap_.insert(std::make_pair(COLOR_CAMERA_NAME, CameraParams()));
   cameraParamsMap_.insert(std::make_pair(DEPTH_CAMERA_NAME, CameraParams()));
   cameraParamsMap_.insert(std::make_pair(IRED1_CAMERA_NAME, CameraParams()));
   cameraParamsMap_.insert(std::make_pair(IRED2_CAMERA_NAME, CameraParams()));
+
+  _sdf = _sdf->GetFirstElement();
 
   do {
     std::string name = _sdf->GetName();
@@ -120,10 +120,6 @@ void RealSensePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
       depthToColorExtrinsicsTopic_ = _sdf->GetValue()->GetAsString();
     } else if (name == "prefix") {
       this->prefix = _sdf->GetValue()->GetAsString();
-    } else if (name == "robotNamespace") {
-      break;
-    } else {
-      throw std::runtime_error("Ivalid parameter for ReakSensePlugin");
     }
 
     _sdf = _sdf->GetNextElement();
@@ -202,25 +198,6 @@ void RealSensePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->colorPub = this->transportNode->Advertise<msgs::ImageStamped>(
     rsTopicRoot + COLOR_CAMERA_TOPIC, 1, colorUpdateRate_);
 
-  // Listen to depth camera new frame event
-  this->newDepthFrameConn = this->depthCam->ConnectNewDepthFrame(
-    std::bind(&RealSensePlugin::OnNewDepthFrame, this));
-
-  this->newIred1FrameConn = this->ired1Cam->ConnectNewImageFrame(
-    std::bind(
-      &RealSensePlugin::OnNewFrame, this, this->ired1Cam, this->ired1Pub));
-
-  this->newIred2FrameConn = this->ired2Cam->ConnectNewImageFrame(
-    std::bind(
-      &RealSensePlugin::OnNewFrame, this, this->ired2Cam, this->ired2Pub));
-
-  this->newColorFrameConn = this->colorCam->ConnectNewImageFrame(
-    std::bind(
-      &RealSensePlugin::OnNewFrame, this, this->colorCam, this->colorPub));
-
-  // Listen to the update event
-  this->updateConnection = event::Events::ConnectWorldUpdateBegin(
-    boost::bind(&RealSensePlugin::OnUpdate, this));
 }
 
 /////////////////////////////////////////////////
