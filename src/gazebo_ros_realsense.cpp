@@ -127,7 +127,7 @@ void GazeboRosRealsense::OnNewFrame(
     this->cameraParamsMap_[camera_id].optical_frame;
   this->image_msg_.header.stamp.sec = current_time.sec;
   this->image_msg_.header.stamp.nanosec = current_time.nsec;
-  if (enableSync_ && (camera_id == COLOR_CAMERA_NAME || camera_id == IRED1_CAMERA_NAME))
+  if (enableSync_)
   {
     last_color_msg_stamp_ = this->image_msg_.header.stamp;
   }
